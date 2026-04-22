@@ -5,6 +5,7 @@
 使い方: python scraper.py
 """
 
+import asyncio
 import io
 import json
 import logging
@@ -17,6 +18,7 @@ from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup
+from playwright.async_api import async_playwright
 
 if sys.stdout.encoding != "utf-8":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
@@ -121,11 +123,12 @@ def scrape_kaitori_wiki(product: Product) -> PriceRecord:
         return PriceRecord(site_name=site, price=None, url=search_url, note="取得失敗")
 
     # 検索結果ページ: li.sub-pro-name にJANが含まれる行を探す
+    # 構造: ul > div.sub-pro > li.sub-pro-name, ul > li.sub-pro-jia
     items = soup.find_all("li", class_="sub-pro-name")
     for li in items:
         if product.jan in li.get_text():
-            # 同じ親ul内の価格liを取得
-            ul = li.parent
+            # li の親は div.sub-pro → さらに親の ul に sub-pro-jia がある
+            ul = li.find_parent("ul")
             if ul:
                 price_li = ul.find("li", class_="sub-pro-jia")
                 if price_li:
@@ -157,69 +160,99 @@ def scrape_kaitori_wiki(product: Product) -> PriceRecord:
 
 
 def scrape_kaden_ichiba(product: Product) -> PriceRecord:
-    """家電市場 — デジタル一眼カメラカテゴリをJAN/キーワードでマッチ"""
+    """家電市場 — tr[id^='row-data-'] からJAN/キーワードでマッチ"""
     site = "家電市場"
     base_url = "https://www.kaden-ichiba.com/item/node/0049/%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E4%B8%80%E7%9C%BC%E3%82%AB%E3%83%A1%E3%83%A9"
 
-    for page in range(1, 8):
+    for page in range(1, 10):
         url = f"{base_url}?node=0049&page={page}" if page > 1 else base_url
         soup = get_soup(url)
         if soup is None:
             break
 
-        rows = soup.select("table tbody tr")
+        # 実際の構造: tr[id^="row-data-"]
+        rows = soup.select("tr[id^='row-data-']")
         if not rows:
             break
 
         for row in rows:
             cells = row.find_all("td")
-            if len(cells) < 7:
+            if len(cells) < 4:
                 continue
 
-            # JAN一致を優先、次にキーワードマッチ
-            jan_text = cells[5].get_text(strip=True) if len(cells) > 5 else ""
-            name_text = cells[4].get_text(strip=True) if len(cells) > 4 else ""
+            # cells[2]: 商品名＋JAN(span[id^="ean-area-"] > small)
+            name_cell = cells[2]
+            ean_span = name_cell.find("span", id=re.compile(r"^ean-area-"))
+            jan_text = ean_span.find("small").get_text(strip=True) if ean_span and ean_span.find("small") else ""
+            name_text = name_cell.get_text(strip=True)
+
             if product.jan not in jan_text and not match_product(name_text, product):
                 continue
 
-            price_text = cells[6].get_text(strip=True) if len(cells) > 6 else ""
-            p = parse_price(price_text, product.price_min, product.price_max)
-            if p:
-                return PriceRecord(site_name=site, price=p, url=url)
+            # cells[3]=プライム, [4]=新品, [5]=中古 の順に試す
+            for idx in [5, 4, 3]:
+                if len(cells) > idx:
+                    p = parse_price(cells[idx].get_text(strip=True), product.price_min, product.price_max)
+                    if p:
+                        return PriceRecord(site_name=site, price=p, url=url)
 
-        # 次ページがなければ終了
-        if not soup.select_one("a[rel='next'], .next-page, li.next"):
+        if not soup.select_one("a[rel='next'], .page-item.active + .page-item a"):
             break
 
     return PriceRecord(site_name=site, price=None, url=base_url, note="商品が見つかりません")
 
 
-def scrape_ichidome(product: Product) -> PriceRecord:
-    """買取１丁目 — カメラカテゴリからキーワードでマッチ"""
+async def scrape_ichidome_async(product: Product, browser) -> PriceRecord:
+    """買取１丁目 — React SPA なので Playwright で取得"""
     site = "買取１丁目"
     url = "https://www.1-chome.com/electricAppliance?category=10000001"
-    soup = get_soup(url)
-    if soup is None:
-        return PriceRecord(site_name=site, price=None, url=url, note="取得失敗")
+    context = await browser.new_context(locale="ja-JP")
+    page = await context.new_page()
+    try:
+        await page.goto(url, wait_until="networkidle", timeout=30000)
+        await page.wait_for_timeout(3000)
 
-    full_text = soup.get_text(" ", strip=True)
+        js_keywords = json.dumps(product.keywords)
+        js_excludes = json.dumps(product.exclude_keywords)
+        result = await page.evaluate(f"""
+        () => {{
+            const jan = "{product.jan}";
+            const keywords = {js_keywords};
+            const excludes = {js_excludes};
+            const priceMin = {product.price_min};
+            const priceMax = {product.price_max};
 
-    # テキストブロックをスライドして商品名+価格のペアを探す
-    for block in re.split(r"(?=\d{13})", full_text):  # JANコードで分割
-        if product.jan in block or match_product(block, product):
-            p = parse_price(block, product.price_min, product.price_max)
-            if p:
-                return PriceRecord(site_name=site, price=p, url=url)
+            const matchText = (t) => {{
+                if (!keywords.every(k => t.includes(k))) return false;
+                if (excludes.some(e => t.includes(e))) return false;
+                return true;
+            }};
 
-    # キーワードマッチでもう一度
-    chunks = [full_text[i:i+300] for i in range(0, len(full_text), 200)]
-    for chunk in chunks:
-        if match_product(chunk, product):
-            p = parse_price(chunk, product.price_min, product.price_max)
-            if p:
-                return PriceRecord(site_name=site, price=p, url=url)
+            // 各商品カード div.commodity-item を検索
+            const items = document.querySelectorAll('.commodity-item');
+            for (const item of items) {{
+                const text = item.textContent || "";
+                if (!text.includes(jan) && !matchText(text)) continue;
 
-    return PriceRecord(site_name=site, price=None, url=url, note="商品が見つかりません")
+                // span.text-right.text-sm から最高値（印なし）を取得
+                const spans = item.querySelectorAll('span.text-right.text-sm');
+                const prices = [...spans].map(s => {{
+                    const m = s.textContent.match(/[¥￥]([\\d,]+)/);
+                    return m ? parseInt(m[1].replace(/,/g, '')) : 0;
+                }}).filter(p => p >= priceMin && p <= priceMax);
+
+                if (prices.length > 0) return Math.max(...prices);
+            }}
+            return null;
+        }}
+        """)
+        if result:
+            return PriceRecord(site_name=site, price=int(result), url=url)
+        return PriceRecord(site_name=site, price=None, url=url, note="商品が見つかりません")
+    except Exception as e:
+        return PriceRecord(site_name=site, price=None, url=url, note=f"エラー: {e}")
+    finally:
+        await context.close()
 
 
 # ──────────────────────────────────────────────
@@ -247,30 +280,41 @@ def now_jst() -> str:
 # メイン
 # ──────────────────────────────────────────────
 
-def main():
+async def main():
     products = load_products()
     data = load_data()
     timestamp = now_jst()
 
-    scrapers = [scrape_kaitori_wiki, scrape_kaden_ichiba, scrape_ichidome]
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
 
-    for product in products:
-        log.info("=== %s (JAN: %s) ===", product.name, product.jan)
-        if product.jan not in data["products"]:
-            data["products"][product.jan] = {
-                "jan": product.jan,
-                "name": product.name,
-                "model": product.model,
-                "brand": product.brand,
-                "prices": {},
-                "history": [],
-            }
+        for product in products:
+            log.info("=== %s (JAN: %s) ===", product.name, product.jan)
+            if product.jan not in data["products"]:
+                data["products"][product.jan] = {
+                    "jan": product.jan,
+                    "name": product.name,
+                    "model": product.model,
+                    "brand": product.brand,
+                    "prices": {},
+                    "history": [],
+                }
 
-        entry = data["products"][product.jan]
-        snapshot = {"timestamp": timestamp, "prices": {}}
+            entry = data["products"][product.jan]
+            snapshot = {"timestamp": timestamp, "prices": {}}
 
-        for scrape_fn in scrapers:
-            record = scrape_fn(product)
+            # requests ベースのスクレイパー
+            for scrape_fn in [scrape_kaitori_wiki, scrape_kaden_ichiba]:
+                record = scrape_fn(product)
+                entry["prices"][record.site_name] = asdict(record)
+                snapshot["prices"][record.site_name] = record.price
+                if record.price:
+                    log.info("  %-12s: ¥%s", record.site_name, f"{record.price:,}")
+                else:
+                    log.info("  %-12s: — (%s)", record.site_name, record.note)
+
+            # Playwright ベース（買取１丁目）
+            record = await scrape_ichidome_async(product, browser)
             entry["prices"][record.site_name] = asdict(record)
             snapshot["prices"][record.site_name] = record.price
             if record.price:
@@ -278,9 +322,10 @@ def main():
             else:
                 log.info("  %-12s: — (%s)", record.site_name, record.note)
 
-        entry["history"].append(snapshot)
-        # 直近30件のみ保持
-        entry["history"] = entry["history"][-30:]
+            entry["history"].append(snapshot)
+            entry["history"] = entry["history"][-30:]
+
+        await browser.close()
 
     data["updated_at"] = timestamp
     save_data(data)
@@ -288,4 +333,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

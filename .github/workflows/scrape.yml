@@ -26,6 +26,9 @@ jobs:
       - name: 依存パッケージをインストール
         run: pip install -r requirements.txt
 
+      - name: Playwright (Chromium) をインストール
+        run: python -m playwright install --with-deps chromium
+
       - name: スクレイピングを実行
         run: python scraper.py
 
