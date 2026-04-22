@@ -1,0 +1,22 @@
+[
+  {
+    "jan": "4548736092044",
+    "name": "Sony α6400 ボディ ブラック",
+    "model": "α6400",
+    "brand": "Sony",
+    "keywords": ["α6400", "ILCE-6400", "ボディ"],
+    "exclude_keywords": ["18-135", "16-50", "ズーム", "キット"],
+    "price_min": 30000,
+    "price_max": 120000
+  },
+  {
+    "jan": "4548736092204",
+    "name": "Sony α6400 18-135mm ズームキット",
+    "model": "α6400",
+    "brand": "Sony",
+    "keywords": ["α6400", "18-135"],
+    "exclude_keywords": [],
+    "price_min": 40000,
+    "price_max": 150000
+  }
+]

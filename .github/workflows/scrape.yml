@@ -1,0 +1,46 @@
+name: カメラ買取価格収集
+
+on:
+  schedule:
+    # 毎日 3時・9時・15時・21時 (JST) = UTC 18時・0時・6時・12時
+    - cron: "0 18,0,6,12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 をセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: 依存パッケージをインストール
+        run: pip install -r requirements.txt
+
+      - name: スクレイピングを実行
+        run: python scraper.py
+
+      - name: HTMLを生成
+        run: python generate_site.py
+
+      - name: 変更があればコミット・プッシュ
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/prices.json docs/index.html
+          if git diff --staged --quiet; then
+            echo "変更なし"
+          else
+            git commit -m "価格更新: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git pull --rebase
+            git push
+          fi
