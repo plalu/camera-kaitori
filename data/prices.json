@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-25T16:21:02+09:00",
+  "updated_at": "2026-04-25T22:09:17+09:00",
   "products": {
     "4548736092044": {
       "jan": "4548736092044",
@@ -11,21 +11,21 @@
           "site_name": "買取wiki",
           "price": 87000,
           "url": "https://camerakaitori.tokyohttps://camerakaitori.tokyo/purchase/6400-ILCE-6400--[]-4548736092044",
-          "fetched_at": "2026-04-25T16:21:03+09:00",
+          "fetched_at": "2026-04-25T22:09:20+09:00",
           "note": ""
         },
         "家電市場": {
           "site_name": "家電市場",
           "price": 45000,
           "url": "https://www.kaden-ichiba.com/item/node/0049/%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E4%B8%80%E7%9C%BC%E3%82%AB%E3%83%A1%E3%83%A9?node=0049&page=3",
-          "fetched_at": "2026-04-25T16:21:09+09:00",
+          "fetched_at": "2026-04-25T22:09:26+09:00",
           "note": ""
         },
         "買取１丁目": {
           "site_name": "買取１丁目",
           "price": null,
           "url": "https://www.1-chome.com/electricAppliance?category=10000001",
-          "fetched_at": "2026-04-25T16:21:15+09:00",
+          "fetched_at": "2026-04-25T22:09:33+09:00",
           "note": "商品が見つかりません"
         }
       },
@@ -149,6 +149,14 @@
             "家電市場": 45000,
             "買取１丁目": null
           }
+        },
+        {
+          "timestamp": "2026-04-25T22:09:17+09:00",
+          "prices": {
+            "買取wiki": 87000,
+            "家電市場": 45000,
+            "買取１丁目": null
+          }
         }
       ]
     },
@@ -162,21 +170,21 @@
           "site_name": "買取wiki",
           "price": 134500,
           "url": "https://camerakaitori.tokyohttps://camerakaitori.tokyo/purchase/6400-ILCE-6400M--4548736092204",
-          "fetched_at": "2026-04-25T16:21:16+09:00",
+          "fetched_at": "2026-04-25T22:09:34+09:00",
           "note": ""
         },
         "家電市場": {
           "site_name": "家電市場",
           "price": 70000,
           "url": "https://www.kaden-ichiba.com/item/node/0049/%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E4%B8%80%E7%9C%BC%E3%82%AB%E3%83%A1%E3%83%A9?node=0049&page=6",
-          "fetched_at": "2026-04-25T16:21:26+09:00",
+          "fetched_at": "2026-04-25T22:09:44+09:00",
           "note": ""
         },
         "買取１丁目": {
           "site_name": "買取１丁目",
           "price": null,
           "url": "https://www.1-chome.com/electricAppliance?category=10000001",
-          "fetched_at": "2026-04-25T16:21:32+09:00",
+          "fetched_at": "2026-04-25T22:09:51+09:00",
           "note": "商品が見つかりません"
         }
       },
@@ -295,6 +303,14 @@
         },
         {
           "timestamp": "2026-04-25T16:21:02+09:00",
+          "prices": {
+            "買取wiki": 134500,
+            "家電市場": 70000,
+            "買取１丁目": null
+          }
+        },
+        {
+          "timestamp": "2026-04-25T22:09:17+09:00",
           "prices": {
             "買取wiki": 134500,
             "家電市場": 70000,
