@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-29T12:23:24+09:00",
+  "updated_at": "2026-04-29T17:22:13+09:00",
   "products": {
     "4548736092044": {
       "jan": "4548736092044",
@@ -11,33 +11,25 @@
           "site_name": "買取wiki",
           "price": 87000,
           "url": "https://camerakaitori.tokyohttps://camerakaitori.tokyo/purchase/6400-ILCE-6400--[]-4548736092044",
-          "fetched_at": "2026-04-29T12:23:27+09:00",
+          "fetched_at": "2026-04-29T17:22:14+09:00",
           "note": ""
         },
         "家電市場": {
           "site_name": "家電市場",
           "price": 45000,
           "url": "https://www.kaden-ichiba.com/item/node/0049/%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E4%B8%80%E7%9C%BC%E3%82%AB%E3%83%A1%E3%83%A9?node=0049&page=3",
-          "fetched_at": "2026-04-29T12:23:33+09:00",
+          "fetched_at": "2026-04-29T17:22:20+09:00",
           "note": ""
         },
         "買取１丁目": {
           "site_name": "買取１丁目",
           "price": null,
           "url": "https://www.1-chome.com/electricAppliance?category=10000001",
-          "fetched_at": "2026-04-29T12:23:40+09:00",
+          "fetched_at": "2026-04-29T17:22:27+09:00",
           "note": "商品が見つかりません"
         }
       },
       "history": [
-        {
-          "timestamp": "2026-04-22T21:05:02+09:00",
-          "prices": {
-            "買取wiki": 87000,
-            "家電市場": null,
-            "買取１丁目": null
-          }
-        },
         {
           "timestamp": "2026-04-22T21:24:14+09:00",
           "prices": {
@@ -264,6 +256,14 @@
         },
         {
           "timestamp": "2026-04-29T12:23:24+09:00",
+          "prices": {
+            "買取wiki": 87000,
+            "家電市場": 45000,
+            "買取１丁目": null
+          }
+        },
+        {
+          "timestamp": "2026-04-29T17:22:13+09:00",
           "prices": {
             "買取wiki": 87000,
             "家電市場": 45000,
@@ -282,33 +282,25 @@
           "site_name": "買取wiki",
           "price": 134000,
           "url": "https://camerakaitori.tokyohttps://camerakaitori.tokyo/purchase/6400-ILCE-6400M--4548736092204",
-          "fetched_at": "2026-04-29T12:23:42+09:00",
+          "fetched_at": "2026-04-29T17:22:28+09:00",
           "note": ""
         },
         "家電市場": {
           "site_name": "家電市場",
           "price": 70000,
           "url": "https://www.kaden-ichiba.com/item/node/0049/%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E4%B8%80%E7%9C%BC%E3%82%AB%E3%83%A1%E3%83%A9?node=0049&page=6",
-          "fetched_at": "2026-04-29T12:23:53+09:00",
+          "fetched_at": "2026-04-29T17:22:38+09:00",
           "note": ""
         },
         "買取１丁目": {
           "site_name": "買取１丁目",
           "price": null,
           "url": "https://www.1-chome.com/electricAppliance?category=10000001",
-          "fetched_at": "2026-04-29T12:24:00+09:00",
+          "fetched_at": "2026-04-29T17:22:45+09:00",
           "note": "商品が見つかりません"
         }
       },
       "history": [
-        {
-          "timestamp": "2026-04-22T21:05:02+09:00",
-          "prices": {
-            "買取wiki": null,
-            "家電市場": null,
-            "買取１丁目": null
-          }
-        },
         {
           "timestamp": "2026-04-22T21:24:14+09:00",
           "prices": {
@@ -535,6 +527,14 @@
         },
         {
           "timestamp": "2026-04-29T12:23:24+09:00",
+          "prices": {
+            "買取wiki": 134000,
+            "家電市場": 70000,
+            "買取１丁目": null
+          }
+        },
+        {
+          "timestamp": "2026-04-29T17:22:13+09:00",
           "prices": {
             "買取wiki": 134000,
             "家電市場": 70000,
